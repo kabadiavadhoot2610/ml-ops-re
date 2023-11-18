@@ -1,3 +1,6 @@
+MtechSem1 MLops course
+Dummy comment to make the feature branch ahead of main branch
+
 system requirement:
 OS
 h/w -- may be skipped --general commodity h/w is required
