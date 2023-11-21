@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 # Import datasets, classifiers and performance metrics
 from sklearn import datasets, metrics
 
-from utils import preprocess_data,split_data,train_model,read_digits
+from utils import preprocess_data,split_data,train_model,read_digits,train_test_dev_split,predict_and_eval
 
 
 # # 2 . Qualitative sanity check
@@ -35,7 +35,7 @@ from utils import preprocess_data,split_data,train_model,read_digits
 #  3 . Splitting the data
 # Split data into 50% train and 50% test subsets
 X,y = read_digits()
-X_train, X_test, y_train, y_test = split_data(X,y,test_size=0.3)
+X_train, X_test, X_dev, y_train, y_test, y_dev = train_test_dev_split(X,y,test_size=0.3,dev_size=0.2)
 
 # 4. Preprocessing
 X_train = preprocess_data(X_train)
