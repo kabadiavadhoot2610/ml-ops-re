@@ -11,7 +11,7 @@ hand-written digits, from 0-9.
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD 3 clause
 
-# Standard scientific Python imports
+# Standard scientific Python imports 
 import matplotlib.pyplot as plt
 
 # Import datasets, classifiers and performance metrics
@@ -19,18 +19,9 @@ from sklearn import datasets, metrics
 
 from utils import preprocess_data,split_data,train_model,read_digits,train_test_dev_split,predict_and_eval
 
+gamma_ranges = [0.0001, 0.0005, 0.001, 0.01, 0.1, 1]
+C_ranges = [0.1, 1, 10, 100, 1000]
 
-# # 2 . Qualitative sanity check
-# _, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 3))
-# for ax, image, label in zip(axes, digits.images, digits.target):
-#     ax.set_axis_off()
-#     ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
-#     ax.set_title("Training: %i" % label)
-
-# We will put all utils here
-
-
-# Create a classifier: a support vector classifier
 
 #  3 . Splitting the data
 # Split data into 50% train and 50% test subsets
@@ -40,17 +31,35 @@ X_train, X_test, X_dev, y_train, y_test, y_dev = train_test_dev_split(X,y,test_s
 # 4. Preprocessing
 X_train = preprocess_data(X_train)
 X_test = preprocess_data(X_test)
+X_dev = preprocess_data(X_dev)
 # flatten the images
 
+# Hyperparameter tuning 
+
+best_acc_so_far = -1
+best_model = None
+for cur_gamma in gamma_ranges:
+    for cur_c in C_ranges:
+        #print("Running for gamma={} c = {}".format(cur_gamma,cur_c))
+        cur_model = train_model(X_train,y_train,{'gamma': cur_gamma, 'C': cur_c},model_type='svm')
+        cur_accuracy = predict_and_eval(cur_model,X_dev,y_dev)
+        if cur_accuracy>best_acc_so_far:
+            print("New best accuracy=",cur_accuracy)
+            best_acc_so_far = cur_accuracy
+            Optimal_C = cur_c
+            Optimal_gamma = cur_gamma
+            best_model = cur_model
+print("Optimal gamma = {} Optimal_C = {}".format(Optimal_gamma,Optimal_C))       
 #  5. Training the data
 
-model = train_model(X_train,y_train,{'gamma': 0.001},model_type='svm')
+model = train_model(X_train,y_train,{'gamma': Optimal_gamma, 'C': Optimal_C},model_type='svm')
 
 
 
 # 6. Getting model prediction on test data
 # Predict the value of the digit on the test subset
-predicted = model.predict(X_test)
+test_accuracy = predict_and_eval(model,X_test,y_test)
+print("Test accuracy = ",test_accuracy)
 
 ###############################################################################
 
@@ -62,34 +71,3 @@ predicted = model.predict(X_test)
 #     ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
 #     ax.set_title(f"Prediction: {prediction}")
 
-
-print(
-    f"Classification report for classifier {model}:\n"
-    f"{metrics.classification_report(y_test, predicted)}\n"
-)
-
-
-
-disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted)
-disp.figure_.suptitle("Confusion Matrix")
-print(f"Confusion matrix:\n{disp.confusion_matrix}")
-
-plt.show()
-
-
-# The ground truth and predicted lists
-y_true = []
-y_pred = []
-cm = disp.confusion_matrix
-
-# For each cell in the confusion matrix, add the corresponding ground truths
-# and predictions to the lists
-for gt in range(len(cm)):
-    for pred in range(len(cm)):
-        y_true += [gt] * cm[gt][pred]
-        y_pred += [pred] * cm[gt][pred]
-
-print(
-    "Classification report rebuilt from confusion matrix:\n"
-    f"{metrics.classification_report(y_true, y_pred)}\n"
-)

@@ -35,4 +35,4 @@ def train_test_dev_split(X, y, test_size, dev_size):
 # Question 2:
 def predict_and_eval(model, X_test, y_test):
     predicted = model.predict(X_test)
-    return metrics.accuracy_score(y_test, predicted), metrics.f1_score(y_test, predicted, average="macro"), predicted
+    return metrics.accuracy_score(y_test, predicted)
